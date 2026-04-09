@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "829796413226",
+    "project_id": "poikatsu-app-73257",
+    "storage_bucket": "poikatsu-app-73257.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:829796413226:android:a5319166c5abc159337853",
+        "android_client_info": {
+          "package_name": "com.example.poikatsu_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAj87Lm70ZF7SiPcv2YyeqDCeDGBMeKopI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:829796413226:android:c1fa23cc4755336a337853",
+        "android_client_info": {
+          "package_name": "jp.keygo.poigo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAj87Lm70ZF7SiPcv2YyeqDCeDGBMeKopI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
