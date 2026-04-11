@@ -192,7 +192,12 @@ class SkyflagService {
     if (spram2 != null && spram2.isNotEmpty) {
       buffer.write('&spram2=${Uri.encodeComponent(spram2)}');
     }
-
-    return buffer.toString();
+    final finalUrl = buffer.toString();
+    if (kDebugMode) {
+      // AccessDenied 切り分け用: 最終的に生成された OW URL を確認する。
+      // ignore: avoid_print
+      print('[SKYFLAG] offerwall url: $finalUrl');
+    }
+    return finalUrl;
   }
 }

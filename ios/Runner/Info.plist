@@ -34,17 +34,7 @@
 		</dict>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>jp.keygo.poigo.firebase_phone_auth</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>app-1-829796413226-ios-dfa73db5e80ff299337853</string>
-			</array>
-		</dict>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLName</key>
-			<string>Firebase</string>
+			<string>jp.keygo.poigo.firebase_auth</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>app-1-829796413226-ios-08156f2c230dcd61337853</string>
@@ -59,8 +49,18 @@
 	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>153.126.130.7</key>
+			<dict>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSExceptionMinimumTLSVersion</key>
+				<string>TLSv1.2</string>
+			</dict>
+		</dict>
 	</dict>
 	<key>NSMotionUsageDescription</key>
 	<string>歩数に応じてポイントタンクを溜めるために、モーションとフィットネスデータを使用します。</string>
