@@ -45,6 +45,9 @@ import 'services/character_evolution_service.dart';
 import 'services/skyflag_service.dart';
 import 'widgets/character_trading_card.dart';
 import 'widgets/character_evolution_animation.dart';
+import 'widgets/app_tutorial_overlay.dart';
+import 'services/level_up_ai_offer.dart';
+import 'services/tutorial_prefs.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -250,15 +253,17 @@ class _MainScreenState extends State<MainScreen> {
             return Scaffold(
               body: showReferral
                   ? ReferralInputScreen(uid: uid)
-                  : IndexedStack(
-                      index: _currentIndex,
-                      children: [
-                        MileTab(uid: uid),
-                        OtokuTab(uid: uid),
-                        IchioshiTab(uid: uid),
-                        LogTab(uid: uid),
-                        MyPageTab(uid: uid),
-                      ],
+                  : _TutorialGate(
+                      child: IndexedStack(
+                        index: _currentIndex,
+                        children: [
+                          MileTab(uid: uid),
+                          OtokuTab(uid: uid),
+                          IchioshiTab(uid: uid),
+                          LogTab(uid: uid),
+                          MyPageTab(uid: uid),
+                        ],
+                      ),
                     ),
               bottomNavigationBar: showReferral ? null : _buildNavBar(),
             );
@@ -299,6 +304,45 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// 初回だけチュートリアルオーバーレイを重ねる
+class _TutorialGate extends StatefulWidget {
+  const _TutorialGate({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_TutorialGate> createState() => _TutorialGateState();
+}
+
+class _TutorialGateState extends State<_TutorialGate> {
+  bool? _showOverlay;
+
+  @override
+  void initState() {
+    super.initState();
+    TutorialPrefs.isCompleted().then((done) {
+      if (!mounted) return;
+      setState(() => _showOverlay = !done);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final show = _showOverlay == true;
+    return Stack(
+      children: [
+        widget.child,
+        if (show)
+          Positioned.fill(
+            child: AppTutorialOverlay(
+              onFinish: () => setState(() => _showOverlay = false),
+            ),
+          ),
+      ],
     );
   }
 }
@@ -947,9 +991,9 @@ class _LotteryResultDialogState extends State<_LotteryResultDialog> {
   }
 }
 
-// ─── トリマ風 5タブ（マイル / おトク / イチオシ / ログ / マイページ） ───
+// ─── トリマ風 5タブのうち「チップ」内に黄色サブタブ（移動・歩数 / ニュース / 占い / くじ） ───
 
-/// チップ: ヘッダー（チップ＋交換）＋上部黄色 TabBar（移動・歩数＝ホーム / ニュース / 占い / くじ / レシート / アンケート）
+/// チップ: ヘッダー（チップ＋交換）＋上部黄色 TabBar（移動・歩数＝ホーム / ニュース / 占い / くじ）
 class MileTab extends StatefulWidget {
   const MileTab({super.key, required this.uid});
   final String uid;
@@ -965,7 +1009,7 @@ class _MileTabState extends State<MileTab> with SingleTickerProviderStateMixin {
   void initState() {
     super.initState();
     // 初期表示は「移動・歩数」（index 0）
-    _tabController = TabController(length: 6, vsync: this, initialIndex: 0);
+    _tabController = TabController(length: 4, vsync: this, initialIndex: 0);
   }
 
   @override
@@ -996,8 +1040,6 @@ class _MileTabState extends State<MileTab> with SingleTickerProviderStateMixin {
                 Tab(icon: _TabIcon(assetPath: 'assets/icon/news.png'), text: 'ニュース'),
                 Tab(icon: _TabIcon(assetPath: 'assets/icon/fortune telling.png'), text: '占い'),
                 Tab(icon: _TabIcon(assetPath: 'assets/icon/Lottery.png'), text: 'くじ'),
-                Tab(icon: _TabIcon(assetPath: 'assets/icon/receipt.png'), text: 'レシート'),
-                Tab(icon: _TabIcon(assetPath: 'assets/icon/questionnaire.png'), text: 'アンケート'),
               ],
             ),
           ),
@@ -1009,8 +1051,6 @@ class _MileTabState extends State<MileTab> with SingleTickerProviderStateMixin {
                 _MileNewsSubTab(uid: widget.uid),
                 _MileFortuneSubTab(),
                 _MileLotterySubTab(uid: widget.uid),
-                const _MileReceiptSubTab(),
-                const _MileSurveySubTab(),
               ],
             ),
           ),
@@ -1036,77 +1076,6 @@ class _TabIcon extends StatelessWidget {
         assetPath,
         fit: BoxFit.contain,
         errorBuilder: (_, __, ___) => Icon(Icons.circle_outlined, size: iconSize, color: AppColors.navy.withOpacity(0.7)),
-      ),
-    );
-  }
-}
-
-class _MileReceiptSubTab extends StatelessWidget {
-  const _MileReceiptSubTab();
-
-  @override
-  Widget build(BuildContext context) {
-    return _ExternalPlaceholderBody(
-      icon: Icons.receipt_long_rounded,
-      title: 'レシート',
-      message: '準備中。API連携をお楽しみに！',
-    );
-  }
-}
-
-class _MileSurveySubTab extends StatelessWidget {
-  const _MileSurveySubTab();
-
-  @override
-  Widget build(BuildContext context) {
-    return _ExternalPlaceholderBody(
-      icon: Icons.fact_check_rounded,
-      title: 'アンケート',
-      message: '準備中。API連携をお楽しみに！',
-    );
-  }
-}
-
-class _ExternalPlaceholderBody extends StatelessWidget {
-  const _ExternalPlaceholderBody({
-    required this.icon,
-    required this.title,
-    required this.message,
-  });
-
-  final IconData icon;
-  final String title;
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.primaryYellow.withOpacity(0.25),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, size: 44, color: AppColors.navy),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              message,
-              style: TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.4),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -1609,6 +1578,8 @@ class _PetCareSectionState extends State<_PetCareSection> {
 
     if (_lastSeenLevel != null && level > _lastSeenLevel! && !_showingEvolution) {
       _showingEvolution = true;
+      final fromLv = _lastSeenLevel!;
+      final toLv = level;
       final oldCard = CharacterCard.forLevel(_lastSeenLevel!, customImageUrl: level >= 4 ? customImageUrl : null);
       final nav = Navigator.of(context);
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -1621,8 +1592,21 @@ class _PetCareSectionState extends State<_PetCareSection> {
             newCard: card,
             onComplete: () {
               Future.delayed(const Duration(milliseconds: 400), () {
-                if (mounted) nav.pop();
+                if (!context.mounted) return;
+                nav.pop();
                 _showEvolutionCongratulations(context);
+                Future.delayed(const Duration(seconds: 3), () {
+                  if (!context.mounted) return;
+                  unawaited(
+                    LevelUpAiOffer.maybeOffer(
+                      context: context,
+                      uid: uid,
+                      fromLevel: fromLv,
+                      toLevel: toLv,
+                      user: user,
+                    ),
+                  );
+                });
               });
             },
           ),

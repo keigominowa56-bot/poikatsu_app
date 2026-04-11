@@ -46,6 +46,7 @@ dependencies:
   encrypt: any
   crypto: any
   app_links: ^7.0.0
+  shared_preferences: ^2.5.3
 
 dev_dependencies:
   flutter_test:

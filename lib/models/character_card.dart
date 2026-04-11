@@ -33,7 +33,7 @@ class CharacterCard {
           stars: 1,
           attribute: 'ノーマル',
           description: '歩いてチップを貯めると成長するよ。',
-          imageAssetPath: 'assets/images/jelly_lv1.gif',
+          imageAssetPath: 'assets/images/lv1.gif',
         );
       case 2:
         return const CharacterCard(
@@ -42,7 +42,7 @@ class CharacterCard {
           stars: 2,
           attribute: 'ノーマル',
           description: 'だんだんパワーアップしてきた！',
-          imageAssetPath: 'assets/images/jelly_lv2.gif',
+          imageAssetPath: 'assets/images/lv2.gif',
         );
       case 3:
         return const CharacterCard(
@@ -51,7 +51,7 @@ class CharacterCard {
           stars: 3,
           attribute: 'レア',
           description: '進化してキラキラになってきた！',
-          imageAssetPath: 'assets/images/jelly_lv3.gif',
+          imageAssetPath: 'assets/images/lv3.gif',
         );
       default:
         return CharacterCard(

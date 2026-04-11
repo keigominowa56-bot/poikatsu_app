@@ -63,9 +63,15 @@ class _CharacterTradingCardState extends State<CharacterTradingCard>
     return GestureDetector(
       onTap: widget.onTap,
       child: AnimatedBuilder(
-        animation: Listenable.merge([_tiltController, _shimmerController, _particleController]),
+        animation: Listenable.merge([
+          _tiltController,
+          _shimmerController,
+          _particleController,
+        ]),
         builder: (context, child) {
-          final tilt = isRare ? 0.02 * math.sin(_tiltController.value * 2 * math.pi) : 0.0;
+          final tilt = isRare
+              ? 0.02 * math.sin(_tiltController.value * 2 * math.pi)
+              : 0.0;
           return Transform(
             transform: Matrix4.identity()
               ..setEntry(3, 2, 0.001)
@@ -112,7 +118,9 @@ class _CharacterTradingCardState extends State<CharacterTradingCard>
         builder: (context, _) {
           return CustomPaint(
             size: Size(size, size * 1.4),
-            painter: _SparkleParticlePainter(progress: _particleController.value),
+            painter: _SparkleParticlePainter(
+              progress: _particleController.value,
+            ),
           );
         },
       ),
@@ -141,7 +149,8 @@ class _CharacterTradingCardState extends State<CharacterTradingCard>
             offset: const Offset(0, 6),
           ),
           BoxShadow(
-            color: (isRare ? AppColors.primaryOrange : AppColors.primaryYellow).withOpacity(0.25),
+            color: (isRare ? AppColors.primaryOrange : AppColors.primaryYellow)
+                .withOpacity(0.25),
             blurRadius: 8,
             spreadRadius: 0,
             offset: const Offset(0, 2),
@@ -151,53 +160,85 @@ class _CharacterTradingCardState extends State<CharacterTradingCard>
       child: ClipRRect(
         borderRadius: BorderRadius.circular(14),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               card.name,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 15,
                 fontWeight: FontWeight.bold,
                 color: AppColors.navy,
+                height: 1.15,
               ),
             ),
-            _buildStars(card.stars),
+            Center(child: _buildStars(card.stars)),
             const SizedBox(height: 6),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: isRare
-                    ? AppColors.primaryYellow.withOpacity(0.4)
-                    : AppColors.textSecondary.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                card.attribute,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: isRare ? AppColors.navy : AppColors.textSecondary,
+            Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: isRare
+                      ? AppColors.primaryYellow.withOpacity(0.4)
+                      : AppColors.textSecondary.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  card.attribute,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: isRare ? AppColors.navy : AppColors.textSecondary,
+                  ),
                 ),
               ),
             ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: w * 0.55,
-              height: w * 0.55,
-              child: _buildCharacterImage(card),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 6, 12, 10),
-              child: Text(
-                card.description,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: AppColors.textSecondary,
-                  height: 1.3,
+            const SizedBox(height: 6),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Column(
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final maxSide = math.min(
+                            w * 0.58,
+                            constraints.maxHeight * 0.92,
+                          );
+                          return Center(
+                            child: SizedBox(
+                              width: maxSide,
+                              height: maxSide,
+                              child: _buildCharacterImage(card),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Flexible(
+                      flex: 2,
+                      child: Text(
+                        card.description,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                          height: 1.25,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -227,12 +268,12 @@ class _CharacterTradingCardState extends State<CharacterTradingCard>
         errorBuilder: (_, __, ___) => _placeholderIcon(),
       );
     }
-    final path = card.imageAssetPath ?? 'assets/images/jelly_lv1.gif';
+    final path = card.imageAssetPath ?? 'assets/images/lv1.gif';
     return Image.asset(
       path,
       fit: BoxFit.contain,
       errorBuilder: (_, __, ___) {
-        final fallback = 'assets/images/jelly_lv${card.level.clamp(1, 3)}.gif';
+        final fallback = 'assets/images/lv${card.level.clamp(1, 3)}.gif';
         return Image.asset(
           fallback,
           fit: BoxFit.contain,
@@ -293,14 +334,17 @@ class _ShimmerBorderPainter extends CustomPainter {
       colors: colors,
     );
     final paint = Paint()
-      ..shader = gradient.createShader(Rect.fromLTWH(0, 0, size.width, size.height))
+      ..shader = gradient.createShader(
+        Rect.fromLTWH(0, 0, size.width, size.height),
+      )
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4;
     canvas.drawRRect(rect, paint);
   }
 
   @override
-  bool shouldRepaint(covariant _ShimmerBorderPainter old) => old.progress != progress;
+  bool shouldRepaint(covariant _ShimmerBorderPainter old) =>
+      old.progress != progress;
 }
 
 class _SparkleParticlePainter extends CustomPainter {
@@ -323,7 +367,8 @@ class _SparkleParticlePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _SparkleParticlePainter old) => old.progress != progress;
+  bool shouldRepaint(covariant _SparkleParticlePainter old) =>
+      old.progress != progress;
 }
 
 class _AuraParticlePainter extends CustomPainter {

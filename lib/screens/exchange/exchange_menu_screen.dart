@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:poigo/constants/digico_showcase.dart';
 import 'package:poigo/constants/point_constants.dart';
 import 'package:poigo/models/exchange_settings_model.dart';
 import 'package:poigo/screens/auth/phone_input_page.dart';
@@ -128,61 +129,198 @@ class _DigicoMenuTab extends StatelessWidget {
       );
     }
 
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Material(
-          color: AppColors.cardWhite,
-          borderRadius: BorderRadius.circular(16),
-          child: InkWell(
-            onTap: () => _openSheet(context),
-            borderRadius: BorderRadius.circular(16),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.navy.withOpacity(0.06),
-                    blurRadius: 16,
-                    offset: const Offset(0, 4),
+    return CustomScrollView(
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          sliver: SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  '貯めたチップをギフトに',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondary,
+                    letterSpacing: 0.3,
                   ),
-                ],
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'デジコなら人気の交換先から選べます',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                    height: 1.25,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '発行後、デジコのサイトで PayPay・Amazonギフト・各種ポイントなどに振り替え可能です（内容はデジコ側の案内に従ってください）。',
+                  style: TextStyle(fontSize: 13, height: 1.45, color: AppColors.textSecondary),
+                ),
+              ],
+            ),
+          ),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          sliver: SliverGrid(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: 1,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final tile = kDigicoShowcaseTiles[index];
+                return _ShowcaseSquareCard(
+                  tile: tile,
+                  onTap: () => _openSheet(context),
+                );
+              },
+              childCount: kDigicoShowcaseTiles.length,
+            ),
+          ),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+          sliver: SliverToBoxAdapter(
+            child: FilledButton.icon(
+              onPressed: () => _openSheet(context),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.primaryOrange,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.gaugeEnd.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.redeem_rounded, color: AppColors.gaugeStart, size: 28),
-                  ),
-                  const SizedBox(width: 16),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'デジコ（ギフトコード）',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Amazonギフト、PayPay、Apple Gift Card等に交換可能',
-                          style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(Icons.chevron_right, color: AppColors.textSecondary),
-                ],
+              icon: const Icon(Icons.redeem_rounded, size: 22),
+              label: const Text(
+                'デジコで交換する',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
           ),
         ),
       ],
+    );
+  }
+}
+
+/// 交換イメージを高める正方形タイル（タップで共通の申込シート）
+class _ShowcaseSquareCard extends StatelessWidget {
+  const _ShowcaseSquareCard({
+    required this.tile,
+    required this.onTap,
+  });
+
+  final DigicoShowcaseTile tile;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.cardWhite,
+      borderRadius: BorderRadius.circular(16),
+      clipBehavior: Clip.antiAlias,
+      elevation: 0,
+      child: InkWell(
+        onTap: onTap,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.navy.withValues(alpha: 0.08)),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.navy.withValues(alpha: 0.07),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    if (tile.gradient != null)
+                      DecoratedBox(decoration: BoxDecoration(gradient: tile.gradient))
+                    else if (tile.assetPath != null)
+                      Image.asset(
+                        tile.assetPath!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => ColoredBox(
+                          color: AppColors.primaryYellow.withValues(alpha: 0.35),
+                          child: Icon(tile.fallbackIcon, size: 48, color: AppColors.navy),
+                        ),
+                      )
+                    else
+                      ColoredBox(
+                        color: AppColors.primaryYellow.withValues(alpha: 0.35),
+                        child: Icon(tile.fallbackIcon, size: 48, color: AppColors.navy),
+                      ),
+                    if (tile.gradient != null)
+                      Center(
+                        child: Icon(
+                          tile.fallbackIcon,
+                          size: 56,
+                          color: Colors.white.withValues(alpha: 0.95),
+                        ),
+                      ),
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withValues(alpha: 0.55),
+                            ],
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(10, 20, 10, 10),
+                          child: Text(
+                            tile.title,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                              shadows: [Shadow(blurRadius: 4, color: Colors.black45)],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+                child: Text(
+                  tile.caption,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    height: 1.25,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
