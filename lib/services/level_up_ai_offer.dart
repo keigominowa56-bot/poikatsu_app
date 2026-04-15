@@ -59,17 +59,15 @@ class LevelUpAiOffer {
     );
     const prompt =
         '歩いて成長するマスコットキャラクター、明るい色、シンプルなゲーム風イラスト、全身、白背景';
-    final url = await OpenAiCharacterService.instance.generateCharacterImage(prompt);
+    final gen = await OpenAiCharacterService.instance.generateCharacterImage(prompt);
     if (!context.mounted) return;
-    if (url == null || url.isEmpty) {
+    if (!gen.isSuccess) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('生成に失敗しました。OPENAI_API_KEY を dart-define で渡しているか確認してください。'),
-        ),
+        SnackBar(content: Text(gen.errorMessage ?? '生成に失敗しました')),
       );
       return;
     }
-    await UserFirestoreService.instance.saveCustomCharacter(uid, url, prompt);
+    await UserFirestoreService.instance.saveCustomCharacter(uid, gen.imageUrl!, prompt);
     await prefs.setBool('$_prefsKeyPrefix$uid', true);
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

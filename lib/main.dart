@@ -7,6 +7,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'admin/admin_app.dart';
@@ -14,6 +15,7 @@ import 'data/life_info_data_source.dart';
 import 'widgets/japan_weather_tab.dart';
 import 'data/prefecture_list.dart';
 import 'constants/point_constants.dart';
+import 'config/openai_config.dart';
 import 'firebase_options.dart';
 import 'models/news_model.dart';
 import 'models/news_settings_model.dart';
@@ -51,6 +53,18 @@ import 'services/tutorial_prefs.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  if (!kIsWeb) {
+    await loadOpenAiEnvFromAssets();
+    try {
+      await dotenv.load(fileName: 'assets/config/openai.env');
+    } catch (e, st) {
+      if (kDebugMode) {
+        // ignore: avoid_print
+        print('flutter_dotenv 補助読み込み失敗（手動読み込みで足りていれば無視可）: $e\n$st');
+      }
+    }
+  }
 
   await _ensureFirebaseInitialized();
 
@@ -1445,12 +1459,15 @@ class _ChangeCharacterButton extends StatelessWidget {
     );
     if (prompt == null || !context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('キャラを生成中...')));
-    final url = await OpenAiCharacterService.instance.generateCharacterImage(prompt);
+    final gen = await OpenAiCharacterService.instance.generateCharacterImage(prompt);
     if (!context.mounted) return;
-    if (url == null || url.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('生成に失敗しました。APIキーを確認してください。')));
+    if (!gen.isSuccess) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(gen.errorMessage ?? '生成に失敗しました')),
+      );
       return;
     }
+    final url = gen.imageUrl!;
     final ok = await UserFirestoreService.instance.tryConsumePoints(uid, _costChips);
     if (!context.mounted) return;
     if (!ok) {
